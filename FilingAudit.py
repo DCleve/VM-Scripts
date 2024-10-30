@@ -137,9 +137,9 @@ rec_df.dropna(subset=['SHELVED_DATE'], inplace=True)
 
 rec_df.sort_values(by=['SHELVED_DATE'], ascending=[False], inplace=True)
 
-tableauTab = filingAuditDoc.worksheet('Tableau')
-tableauTab.clear()
-gd.set_with_dataframe(tableauTab, rec_df)
+snowflakeTab = filingAuditDoc.worksheet('Snowflake')
+snowflakeTab.clear()
+gd.set_with_dataframe(snowflakeTab, rec_df)
 
 ##Update audit log
 csv_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Audit CSVs", "AuditLog.csv"]
