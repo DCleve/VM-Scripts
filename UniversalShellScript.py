@@ -47,7 +47,7 @@ for i in range(len(schedule_df)):
         os.system(scriptName)
         time.sleep(15)
 
-    elif ((scriptHour == 26) | (scriptHour == 27)) & (currentMinute <= 15):
+    elif ((scriptHour == 26) | (scriptHour == 27)) & (currentMinute <= 15) & (currentHour != 0):
         int_check_2 = divmod(currentHour, 2)
         int_check_6 = divmod(currentHour, 6)
 
