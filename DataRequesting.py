@@ -26,19 +26,22 @@ requests.batch_clear(['A2:C'])
 
 retrievals = gc.open_by_key('1RhJ3ff2rK4ovQz8VAgocRSrvmbqObYSczcG9NlyVa7c').worksheet('Retrievals')
 retrievalsData = pd.DataFrame(retrievals.get_all_values())
-retrievalsData.columns = retrievalsData.iloc[0]
-retrievalsData = retrievalsData[1:]
-retrievals_df = pd.DataFrame(retrievalsData)
-retrievals_df.dropna(subset=["Retrievals"], inplace=True)
 
-dt_string = datetime.now(pytz.timezone('America/New_York')).strftime("%m/%d/%Y %H:%M:%S")
+if(len(retrievalsData) > 0):
+    retrievalsData.columns = retrievalsData.iloc[0]
+    retrievalsData = retrievalsData[1:]
+    retrievals_df = pd.DataFrame(retrievalsData)
+    retrievals_df.dropna(subset=["Retrievals"], inplace=True)
 
-retrievals_list = retrievals_df['Retrievals'].tolist()
-retrievals_list.append(dt_string)
-retrievals_list_df = pd.DataFrame(list(zip(retrievals_list)), columns=['Retrievals'])
+    dt_string = datetime.now(pytz.timezone('America/New_York')).strftime("%m/%d/%Y %H:%M:%S")
 
-retrievals.clear()
-gd.set_with_dataframe(retrievals, retrievals_list_df)
+    retrievals_list = retrievals_df['Retrievals'].tolist()
+    retrievals_list.append(dt_string)
+    retrievals_list_df = pd.DataFrame(list(zip(retrievals_list)), columns=['Retrievals'])
+
+    retrievals.clear()
+    gd.set_with_dataframe(retrievals, retrievals_list_df)
+
 
 ##Scorecard
 scorecard_requests_df = requests_df.copy()
