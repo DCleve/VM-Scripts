@@ -15,6 +15,7 @@ gc=gspread.service_account()
 
 archive = gc.open_by_key('1e3XPI4d1n9kI6hENjvLU1lIyLGbZf2-riujAdH_0oFE')
 importTab = gc.open_by_key('1e3XPI4d1n9kI6hENjvLU1lIyLGbZf2-riujAdH_0oFE').worksheet('Import')
+dataTab = gc.open_by_key('1e3XPI4d1n9kI6hENjvLU1lIyLGbZf2-riujAdH_0oFE').worksheet('Data')
 
 ##Move data from import tab into archive and clear
 import_df =  pd.DataFrame.from_dict(importTab.get_all_records())
