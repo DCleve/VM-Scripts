@@ -49,16 +49,6 @@ for i in range(len(dataTab_df), 0, -1):
     if dataTab_df['Punch'][i - 1] < date_test:
         dataTab.delete_rows(i + 1, i + 1)
 
-##Move data from import tab into archive and clear
-import_df =  pd.DataFrame.from_dict(importTab.get_all_records())
-import_df.rename(columns={'Enter a # Please':'Data'}, inplace=True)
-
-import_data = import_df.values.tolist()
-
-dataTab.append_rows(import_data)
-
-importTab.batch_clear(['A2:A'])
-
 ##Update audit log
 csv_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Audit CSVs", "AuditLog.csv"]
 result = separator.join(csv_string)

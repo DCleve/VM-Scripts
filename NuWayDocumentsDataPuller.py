@@ -16,6 +16,16 @@ gc=gspread.service_account()
 archive = gc.open_by_key('1e3XPI4d1n9kI6hENjvLU1lIyLGbZf2-riujAdH_0oFE')
 importTab = gc.open_by_key('1e3XPI4d1n9kI6hENjvLU1lIyLGbZf2-riujAdH_0oFE').worksheet('Import')
 
+##Move data from import tab into archive and clear
+import_df =  pd.DataFrame.from_dict(importTab.get_all_records())
+import_df.rename(columns={'Enter a # Please':'Data'}, inplace=True)
+
+import_data = import_df.values.tolist()
+
+dataTab.append_rows(import_data)
+
+importTab.batch_clear(['A2:A'])
+
 ##Let sort doc know data is being pulled
 #sortDataTab = gc.open_by_key('1cXFsju_uztNtYDTSt30b3wVqjUGt1Qr6O1mMya4H3cM').worksheet('Data')
 #sortDataTab.update('C2', 'TRUE')
