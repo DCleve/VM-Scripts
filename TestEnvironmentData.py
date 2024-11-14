@@ -359,8 +359,18 @@ rec_proc_df['Day %'] = rec_proc_df['Day %'].astype('float64') + ((rec_proc_df['t
 
 ###Concat frames together
 rec_final_df = pd.DataFrame()
-rec_final_df = pd.concat([rec_proc_df, rec_ver_df], ignore_index=True)
+
+if len(rec_ver_df) > 0:
+    rec_final_df = pd.concat([rec_proc_df, rec_ver_df], ignore_index=True)
+
+if len(rec_ver_df) == 0:
+    rec_final_df = rec_proc_df
+
+rec_final_df["Test"] = ""
+rec_final_df["Notes"] = ""
+
 rec_final_df.drop('Puncher', axis=1, inplace=True)
+
 rec_final_df.rename(columns={'Preferred Name':'Puncher'}, inplace=True)
 
 ##Check for negatives
@@ -627,7 +637,7 @@ pvp_df["combined"] = pvp_df['Task'].astype(str) + pvp_df['sq_type'].astype(str)
 pvp_df = pd.merge(pvp_df, pvp_standards_df, left_on='combined', right_on='combined')
 
 pvp_df.drop(['Task_y', 'Subtask_y'], axis=1, inplace=True)
-pvp_df.rename(columns={'Task_x':'Task', 'Subtask_x':'Subtask'}, inplace=True)
+pvp_df.rename(columns={'Task_x':'Task', 'Subtask_x':'Subtask', 'ORDER_COUNT':'Orders'}, inplace=True)
 
 ##Aggragate errors
 pvp_df["total_errors"] = pvp_df['Coeff 1 Units'].apply(pd.to_numeric, errors='coerce') + pvp_df['Coeff 2 Units'].apply(pd.to_numeric, errors='coerce') + pvp_df['Coeff 3 Units'].apply(pd.to_numeric, errors='coerce') + pvp_df['Coeff 4 Units'].apply(pd.to_numeric, errors='coerce') + pvp_df['Coeff 5 Units'].apply(pd.to_numeric, errors='coerce')
@@ -635,7 +645,7 @@ pvp_df["total_errors"] = pvp_df['Coeff 1 Units'].apply(pd.to_numeric, errors='co
 ##Calculate Metrics
 pvp_df = pvp_df.loc[(pvp_df['adjusted_shift_length'].astype('float64') > 0) & (pvp_df['Shift Name'] != 0)]
 
-pvp_df["Coeff 1 Units"] = pvp_df['ORDER_COUNT']
+pvp_df["Coeff 1 Units"] = pvp_df['Orders']
 pvp_df["Coeff 2 Units"] = pvp_df['total_errors']
 pvp_df["Coeff 3 Units"] = 0
 pvp_df["Coeff 4 Units"] = 0
@@ -667,7 +677,7 @@ pvp_df.drop('Subtask', axis=1, inplace=True)
 
 pvp_df.rename(columns={'SHIPPINGQUEUENUMBER':'Subtask'}, inplace=True)
 
-pvp_df = pvp_df[['Punch', 'first_offset', 'Puncher', 'Units', 'Task', 'Subtask', 'adjusted_shift_length', 'Regular Hours', 'Day %', 'Shift Name', 'Test', 'Notes']]
+pvp_df = pvp_df[['Punch', 'first_offset', 'Puncher', 'Units', 'Task', 'Subtask', 'adjusted_shift_length', 'Regular Hours', 'Day %', 'Shift Name', 'Test', 'Notes', 'Orders', 'total_errors']]
 
 ###PVP SCO Module
 ##Make pvp sco nuway dataframe, merge with sq data
@@ -775,7 +785,7 @@ pvp_sco_df = pd.merge(pvp_sco_df, pvpd_quantity_agg, how='right', on='sco_combin
 pvp_sco_df = pvp_sco_df.drop_duplicates(subset=['sco_combined'])
 pvp_sco_df.drop(['sco_combined', 'Units'], axis=1, inplace=True)
 
-pvp_sco_df.rename(columns={'pvpd_quantity_2': 'pvpd_quantity'}, inplace=True)
+pvp_sco_df.rename(columns={'pvpd_quantity_2': 'pvpd_quantity', 'ORDER_COUNT':'Orders'}, inplace=True)
 
 pvp_sco_df.drop_duplicates(subset='Dupe', inplace=True)
 
@@ -828,7 +838,7 @@ pvp_sco_df.loc[pvp_sco_df['Y-Int Def'] == 'SPC', 'Day %'] = pvp_sco_df['Units'].
 ##Create final dataframe
 pvp_sco_df.rename(columns={'SHIPPINGQUEUENUMBER':'Subtask', 'Task_x':'Task'}, inplace=True)
 pvp_sco_df['Task'] = pvp_sco_df['Task'].str.upper()
-pvp_sco_df = pvp_sco_df[['Punch', 'first_offset', 'Puncher', 'Units', 'Task', 'Subtask', 'adjusted_shift_length', 'Regular Hours', 'Day %', 'Shift Name', 'Test', 'Notes']]
+pvp_sco_df = pvp_sco_df[['Punch', 'first_offset', 'Puncher', 'Units', 'Task', 'Subtask', 'adjusted_shift_length', 'Regular Hours', 'Day %', 'Shift Name', 'Test', 'Notes', 'Orders', 'total_errors']]
 
 ###Pull Verifying Module
 ##Make pull ver nuway dataframe
@@ -1212,7 +1222,8 @@ filing_df = filing_df.loc[filing_df.Task == 'filing']
 ##Find dupes
 filing_df["Dupe"] = filing_df['Punch'].astype(str) + filing_df['Puncher'].astype(str) + filing_df['Units'].astype(str)
 
-filing_dupe_df = filing_df[filing_df.duplicated(subset=['Dupe'], keep=False)]
+filing_dupe_df = filing_df.copy()
+filing_dupe_df[filing_dupe_df.duplicated(subset=['Dupe'], keep=False)]
 filing_dupe_df.drop_duplicates(subset=['Dupe'], inplace=True)
 filing_dupe_df.loc[filing_dupe_df['Dupe'] != '', 'Dupe'] = "Error"
 filing_dupe_df = filing_dupe_df[['Punch', 'Puncher', 'Task', 'Subtask', 'Units', 'Orders Completed', 'Flex Run', 'Env Run', 'Dupe']]
@@ -1772,7 +1783,8 @@ pfep_df["Data"] = pfep_df['first_offset'].astype(str) + "|" + pfep_df['Puncher']
 
 pfep_df = pfep_df[['Data']]
 
-data_df['Data'] = data_df['Punch'].astype(str) + "|" + data_df['first_offset'].astype(str) + "|" + data_df['Puncher'].astype(str) + "|" + data_df['Units'].astype(str) + "|" + data_df['Subtask'].astype(str) + "|" + data_df['Day %'].astype(str) + "|" + data_df['Earned_Hours'].astype(str) + "|" + data_df['Task'].astype(str) + "|" + data_df['adjusted_shift_length'].astype(str) + "|" + data_df['Total_Day_%'].astype(str) + "|" + data_df['Total_Earned_Hours'].astype(str) + "|" + data_df['Shift Name'].astype(str) + "|" + data_df['Regular Hours'].astype(str)
+data_df['Data'] = data_df['Punch'].astype(str) + "|" + data_df['first_offset'].astype(str) + "|" + data_df['Puncher'].astype(str) + "|" + data_df['Units'].astype(str) + "|" + data_df['Subtask'].astype(str) + "|" + data_df['Day %'].astype(str) + "|" + data_df['Earned_Hours'].astype(str) + "|" + data_df['Task'].astype(str) + "|" + data_df['adjusted_shift_length'].astype(str) + "|" + data_df['Total_Day_%'].astype(str) + "|" + data_df['Total_Earned_Hours'].astype(str) + "|" + data_df['Shift Name'].astype(str) + "|" + data_df['Regular Hours'].astype(str) + "|" + "" + "|" + data_df['Orders'].astype(str) + "|" + data_df['Test'].astype(str) + "|" + data_df['Notes'].astype(str) + "|" + data_df['total_errors'].astype(str)
+
 
 data_df = data_df[['Data']]
 
