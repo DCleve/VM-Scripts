@@ -58,3 +58,21 @@ rec_df['cabinet_splits'] = rec_df['cabinet_splits'].astype('float64')
 recDataTab = gc.open_by_key('1xbP4pPxgIDBiG7U46J_8R7yerpthO3I41aAkdmiXkkI').worksheet('RecData')
 recDataTab.clear()
 gd.set_with_dataframe(recDataTab, rec_df)
+
+##Update audit log
+csv_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Audit CSVs", "AuditLog.csv"]
+result = separator.join(csv_string)
+audit_df = pd.read_csv(result)
+
+executionTime = (time.time() - startTime)
+dt_string = datetime.now(pytz.timezone('America/New_York')).strftime("%m/%d/%Y %H:%M:%S")
+script_name = os.path.basename(__file__).replace('.py', '')
+
+new_audit = {'Timestamp': dt_string, 'Execution Time': executionTime, 'Script': script_name}
+
+new_audit_df = pd.DataFrame(data=new_audit, index=[0])
+
+audit_df = pd.concat([audit_df, new_audit_df])
+audit_df.dropna(subset=["Timestamp"], inplace=True)
+
+audit_df.to_csv(result, index=False)
