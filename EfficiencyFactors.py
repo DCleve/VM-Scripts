@@ -2,14 +2,15 @@ import gspread
 import pandas as pd
 import gspread_dataframe as gd
 from datetime import datetime, timedelta
+import datetime as dt
 import time
-startTime = time.time()
-import numpy as np
-import requests
 import os
-separator = '\\'
-login = os.getlogin()
+import numpy as np
+import pytz
+import datetime as dt
 
+login = os.getlogin()
+separator = '\\'
 startTime = time.time()
 
 gc=gspread.service_account()
