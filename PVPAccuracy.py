@@ -60,7 +60,7 @@ pvp_df.dropna(subset=["ORDER_NUMBER"], inplace=True)
 ##Import ticket data
 tix_data_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Data CSVs", "Snowflake", "TixData.csv"]
 tix_data_result = separator.join(tix_data_string)
-tix_data_df = pd.read_csv(tix_data_result)
+tix_data_df = pd.read_csv(tix_data_result, low_memory=False)
 
 ##Split tix df
 tix_data_df.loc[tix_data_df['TICKET_ORDER_NUMBER_1'] == '0', 'TICKET_ORDER_NUMBER_1'] = None

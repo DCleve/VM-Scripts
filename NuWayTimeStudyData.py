@@ -188,7 +188,7 @@ nuway_pull_df = pd.merge(nuway_pull_df, pulled_pcids_agg, how='right', on='pull_
 
 nuway_pull_df = nuway_pull_df.drop_duplicates(subset=['pull_combined'])
 
-nuway_pull_df.rename(columns={'pulled_quantity_2': 'pulled_quantity', 'pulled_pcids_2': 'pulled_pcids'}, inplace=True)
+nuway_pull_df.rename(columns={'pulled_quantity_2': 'pulled_quantity', 'pulled_pcids_2': 'pulled_pcids', 'sq_card_quantity_y':'sq_card_quantity'}, inplace=True)
 
 nuway_pull_df = nuway_pull_df.loc[nuway_pull_df['pulled_pcids'] != 0]
 
