@@ -149,7 +149,7 @@ for i in range(len(managers_df)):
 
     send_to_df = send_to_df[['Date', 'Preferred Name', 'Regular Hours', 'Shift Length']]
 
-    #send_email(send_to_email, Subject, send_to_df)
+    send_email(send_to_email, Subject, send_to_df)
 
 ##Update audit log
 csv_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Audit CSVs", "AuditLog.csv"]
