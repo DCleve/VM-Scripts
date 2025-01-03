@@ -33,8 +33,6 @@ for i in range(len(schedule_df)):
     scriptHour = schedule_df.iloc[i, 2]
     scriptMinute = schedule_df.iloc[i, 3]
 
-    scriptHour = float(scriptHour)
-
     if (scriptHour == 25) & (currentMinute <= 15):
         os.system(scriptName)
         time.sleep(15)
@@ -44,7 +42,6 @@ for i in range(len(schedule_df)):
         time.sleep(15)
 
     elif (scriptHour == currentHour) & (currentMinute > 15) & (currentMinute < 35):
-        print(scriptName)
         os.system(scriptName)
         time.sleep(15)
 
