@@ -204,7 +204,7 @@ paperless_df.loc[(paperless_df['DENSITY_PULLED'] == 1) & (paperless_df['sq_type'
 paperless_df = paperless_df[['PUNCHER', 'SQ', 'PUNCH', 'CARDS_PULLED', 'DENSITY_PULLED', 'PAUSED_TIME_SECONDS', 'pulling_time_hours', 'sq_type', 'PULLING_START']]
 
 ##Write data to sheet
-ppDataTab = gc.open_by_key('1L3que0F_p53yEOrjUIHQ9e33CvV1szUAMKPnlcCWBmc').worksheet('Data')
+ppDataTab = gc.open_by_key('1tdlE-_-rACdf2GyWE5SWSdPQ5P5X38Ec40iN1HaS8Mo').worksheet('PPData')
 ppDataTab.clear()
 gd.set_with_dataframe(ppDataTab, paperless_df)
 

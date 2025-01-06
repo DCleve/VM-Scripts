@@ -206,9 +206,9 @@ data_df = pd.concat([nuway_pvp_df, nuway_pvp_sco_df, nuway_error_res_df, nuway_p
 data_df.drop(['CREATED_AT'], axis=1, inplace=True)
 
 ##Write data to sheet
-dataTab = gc.open_by_key('1vCK_DeduSRY25LSRWO2YSeVAwDJxQ3V5FVkG9-f4XQA').worksheet('Data')
-dataTab.clear()
-gd.set_with_dataframe(dataTab, data_df)
+dataTab = gc.open_by_key('1tdlE-_-rACdf2GyWE5SWSdPQ5P5X38Ec40iN1HaS8Mo').worksheet('Data')
+dataTab.batch_clear(['A1:U'])
+gd.set_with_dataframe(dataTab, data_df, row=1, col=1)
 
 ##Update audit log
 from datetime import datetime
