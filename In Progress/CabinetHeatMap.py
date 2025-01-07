@@ -83,24 +83,3 @@ pull_df.drop(['TOTAL_CARDS_PULLED_PER_LOCATION_x', 'TOTAL_SKUS_PER_LOCATION_x', 
 
 ##Write data to sheet
 gd.set_with_dataframe(pull_tab, pull_df, row=1, col=1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
