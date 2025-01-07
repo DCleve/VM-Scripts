@@ -149,6 +149,10 @@ for i in range(len(managers_df)):
 
     send_to_df = send_to_df[['Date', 'Preferred Name', 'Regular Hours', 'Shift Length']]
 
+    print(supervisor_or_lead)
+    print(send_to_email)
+    print(send_to_df)
+
     send_email(send_to_email, Subject, send_to_df)
 
 ##Update audit log
