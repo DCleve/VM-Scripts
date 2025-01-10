@@ -72,6 +72,7 @@ slot_df = pd.read_csv(slot_result)
 
 slot_df["unique_pcids_by_slot"] = slot_df["unique_pcids_by_slot"].astype('float64')
 slot_df["card_qty_by_slot"] = slot_df["card_qty_by_slot"].astype('float64')
+
 ##Fix data types
 pvp_df['ORDER_COUNT'] = pvp_df['ORDER_COUNT'].astype('float64')
 pvp_df['sq_card_quantity'] = pvp_df['sq_card_quantity'].astype('float64')
@@ -188,7 +189,7 @@ nuway_pull_df = pd.merge(nuway_pull_df, pulled_pcids_agg, how='right', on='pull_
 
 nuway_pull_df = nuway_pull_df.drop_duplicates(subset=['pull_combined'])
 
-nuway_pull_df.rename(columns={'pulled_quantity_2': 'pulled_quantity', 'pulled_pcids_2': 'pulled_pcids'}, inplace=True)
+nuway_pull_df.rename(columns={'pulled_quantity_2': 'pulled_quantity', 'pulled_pcids_2': 'pulled_pcids', 'sq_card_quantity_y':'sq_card_quantity'}, inplace=True)
 
 nuway_pull_df = nuway_pull_df.loc[nuway_pull_df['pulled_pcids'] != 0]
 
@@ -206,9 +207,19 @@ data_df = pd.concat([nuway_pvp_df, nuway_pvp_sco_df, nuway_error_res_df, nuway_p
 data_df.drop(['CREATED_AT'], axis=1, inplace=True)
 
 ##Write data to sheet
-dataTab = gc.open_by_key('1vCK_DeduSRY25LSRWO2YSeVAwDJxQ3V5FVkG9-f4XQA').worksheet('Data')
-dataTab.clear()
-gd.set_with_dataframe(dataTab, data_df)
+dataTab = gc.open_by_key('1tdlE-_-rACdf2GyWE5SWSdPQ5P5X38Ec40iN1HaS8Mo').worksheet('Data')
+dataTab.batch_clear(['A1:U'])
+gd.set_with_dataframe(dataTab, data_df, row=1, col=1)
+
+##Import Paperless Data
+paperless_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Data CSVs", "Snowflake", "Paperless.csv"]
+paperless_result = separator.join(paperless_string)
+paperless_df = pd.read_csv(paperless_result)
+
+##Write ppdata to sheet
+ppDataTab = gc.open_by_key('1tdlE-_-rACdf2GyWE5SWSdPQ5P5X38Ec40iN1HaS8Mo').worksheet('PPData')
+ppDataTab.batch_clear(['A1:I'])
+gd.set_with_dataframe(ppDataTab, paperless_df)
 
 ##Update audit log
 from datetime import datetime
