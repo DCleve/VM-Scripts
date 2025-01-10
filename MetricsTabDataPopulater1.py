@@ -58,7 +58,7 @@ punch_df = punch_df.loc[punch_df['Google Key'].str.len() == 44]
 
 punch_df.drop_duplicates(subset=['Data'], inplace=True)
 
-punch_df["Date"] = punch_df['Data'].str.split('|').str[1]↓
+punch_df["Date"] = punch_df['Data'].str.split('|').str[1]
 punch_df["Sort"] = punch_df['Data'].str.split('|').str[0]
 punch_df['Date'] = pd.to_datetime(punch_df['Date'])
 punch_df['Sort'] = pd.to_datetime(punch_df['Sort'])
