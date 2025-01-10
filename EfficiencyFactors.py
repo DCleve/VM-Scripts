@@ -21,11 +21,11 @@ snowflake_pull = connect(user='Dave', password='Quantum314!', account='fva14998.
 efficFactorsDoc = gc.open_by_key('1dWEG8-WpJwRDUpQqIsJAqidj3bAv8sJZUoiSTWn8pwA')
 
 nuwayDataTab = efficFactorsDoc.worksheet('NuWayData')
-<<<<<<< HEAD
+<<<<<<<<< Temporary merge branch 1
 nuwayDataTab.batch_clear(['A2:A'])
-=======
+=========
 nuwayDataTab.batch_clear(['A3:A'])
->>>>>>> 2dc74ed46406ee988cb5bb819bf5c43431c894a9
+>>>>>>>>> Temporary merge branch 2
 
 recDataTab = efficFactorsDoc.worksheet('RecData')
 recDataTab.clear()

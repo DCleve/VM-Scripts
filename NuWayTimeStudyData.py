@@ -210,8 +210,8 @@ data_df.drop(['CREATED_AT'], axis=1, inplace=True)
 dataTab = gc.open_by_key('1tdlE-_-rACdf2GyWE5SWSdPQ5P5X38Ec40iN1HaS8Mo').worksheet('Data')
 dataTab.batch_clear(['A1:U'])
 gd.set_with_dataframe(dataTab, data_df, row=1, col=1)
-<<<<<<< HEAD
-=======
+<<<<<<<<< Temporary merge branch 1
+=========
 
 ##Import Paperless Data
 paperless_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Data CSVs", "Snowflake", "Paperless.csv"]
@@ -222,7 +222,7 @@ paperless_df = pd.read_csv(paperless_result)
 ppDataTab = gc.open_by_key('1tdlE-_-rACdf2GyWE5SWSdPQ5P5X38Ec40iN1HaS8Mo').worksheet('PPData')
 ppDataTab.batch_clear(['A1:I'])
 gd.set_with_dataframe(ppDataTab, paperless_df)
->>>>>>> 2dc74ed46406ee988cb5bb819bf5c43431c894a9
+>>>>>>>>> Temporary merge branch 2
 
 ##Update audit log
 from datetime import datetime
