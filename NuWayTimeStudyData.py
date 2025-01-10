@@ -72,6 +72,7 @@ slot_df = pd.read_csv(slot_result)
 
 slot_df["unique_pcids_by_slot"] = slot_df["unique_pcids_by_slot"].astype('float64')
 slot_df["card_qty_by_slot"] = slot_df["card_qty_by_slot"].astype('float64')
+
 ##Fix data types
 pvp_df['ORDER_COUNT'] = pvp_df['ORDER_COUNT'].astype('float64')
 pvp_df['sq_card_quantity'] = pvp_df['sq_card_quantity'].astype('float64')
@@ -209,6 +210,19 @@ data_df.drop(['CREATED_AT'], axis=1, inplace=True)
 dataTab = gc.open_by_key('1tdlE-_-rACdf2GyWE5SWSdPQ5P5X38Ec40iN1HaS8Mo').worksheet('Data')
 dataTab.batch_clear(['A1:U'])
 gd.set_with_dataframe(dataTab, data_df, row=1, col=1)
+<<<<<<< HEAD
+=======
+
+##Import Paperless Data
+paperless_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Data CSVs", "Snowflake", "Paperless.csv"]
+paperless_result = separator.join(paperless_string)
+paperless_df = pd.read_csv(paperless_result)
+
+##Write ppdata to sheet
+ppDataTab = gc.open_by_key('1tdlE-_-rACdf2GyWE5SWSdPQ5P5X38Ec40iN1HaS8Mo').worksheet('PPData')
+ppDataTab.batch_clear(['A1:I'])
+gd.set_with_dataframe(ppDataTab, paperless_df)
+>>>>>>> 2dc74ed46406ee988cb5bb819bf5c43431c894a9
 
 ##Update audit log
 from datetime import datetime

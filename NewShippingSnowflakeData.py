@@ -203,11 +203,14 @@ paperless_df.loc[(paperless_df['DENSITY_PULLED'] == 1) & (paperless_df['sq_type'
 ##Create final dataframe
 paperless_df = paperless_df[['PUNCHER', 'SQ', 'PUNCH', 'CARDS_PULLED', 'DENSITY_PULLED', 'PAUSED_TIME_SECONDS', 'pulling_time_hours', 'sq_type', 'PULLING_START']]
 
+<<<<<<< HEAD
 ##Write data to sheet
 ppDataTab = gc.open_by_key('1tdlE-_-rACdf2GyWE5SWSdPQ5P5X38Ec40iN1HaS8Mo').worksheet('PPData')
 ppDataTab.clear()
 gd.set_with_dataframe(ppDataTab, paperless_df)
 
+=======
+>>>>>>> 2dc74ed46406ee988cb5bb819bf5c43431c894a9
 ##Create paperless.csv
 paperless_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Data CSVs", "Snowflake", "Paperless.csv"]
 paperless_result = separator.join(paperless_string)
@@ -272,6 +275,76 @@ mail_df = mail_df[['PACKAGE_NUMBER', 'CHECK_IN_TIME', 'EVENT_TYPE', 'USER_EMAIL'
 mailDataTab = gc.open_by_key('1NJ0ydMI3CTKcYjzXwG-rwdcoVtaXfkDoOFA1x83X25I').worksheet('Data')
 mailDataTab.clear()
 gd.set_with_dataframe(mailDataTab, mail_df)
+
+##Import cabinet data for 404 doc
+cab_sql = ("""
+select
+    distinct concat(direct_inventory.set_name,  '-', direct_inventory.condition) as identifier
+    , direct_inventory.set_name as set_name
+    , direct_inventory.condition as cond_name
+    , sku_hist.location_name as cabinet
+    , sku_hist.physical_order as physical_order
+
+
+from analytics.core.fulfillment_center_skus_location_history as sku_hist
+inner join analytics.core.direct_inventory on sku_hist.product_condition_id = direct_inventory.product_condition_id
+
+where
+    sku_hist.effective_to is null
+
+""")
+
+cursor = snowflake_pull.cursor()
+cursor.execute(cab_sql)
+
+cab_df = cursor.fetch_pandas_all()
+
+cab_df.drop(cab_df.filter(like='Unnamed'), axis=1, inplace=True)
+cab_df.dropna(subset=['IDENTIFIER'], inplace=True)
+
+cab_df = cab_df[['SET_NAME', 'COND_NAME', 'CABINET']]
+
+##Grab unique cabinets
+unique_cabs_df = cab_df.copy()
+unique_cabs_df = unique_cabs_df[['CABINET']]
+unique_cabs_df.drop_duplicates(subset=['CABINET'], inplace=True)
+
+
+unique_cabs_df["game_name"] = unique_cabs_df['CABINET'].str.split('-').str[0]
+unique_cabs_df["condition_name"] = unique_cabs_df['CABINET'].str.split('-').str[1]
+unique_cabs_df["cab_number"] = unique_cabs_df['CABINET'].str.split('-').str[2]
+
+unique_cabs_df["condition_order"] = 100
+
+unique_cabs_df.loc[unique_cabs_df['condition_name'] == 'NM', 'condition_order'] = 1
+unique_cabs_df.loc[unique_cabs_df['condition_name'] == 'LP', 'condition_order'] = 2
+unique_cabs_df.loc[unique_cabs_df['condition_name'] == 'MP', 'condition_order'] = 3
+unique_cabs_df.loc[unique_cabs_df['condition_name'] == 'HP', 'condition_order'] = 4
+unique_cabs_df.loc[unique_cabs_df['condition_name'] == 'NMF', 'condition_order'] = 5
+unique_cabs_df.loc[unique_cabs_df['condition_name'] == 'LPF', 'condition_order'] = 6
+unique_cabs_df.loc[unique_cabs_df['condition_name'] == 'MPF', 'condition_order'] = 7
+unique_cabs_df.loc[unique_cabs_df['condition_name'] == 'HPF', 'condition_order'] = 8
+unique_cabs_df.loc[unique_cabs_df['condition_name'] == 'NMH', 'condition_order'] = 9
+unique_cabs_df.loc[unique_cabs_df['condition_name'] == 'LPH', 'condition_order'] = 10
+unique_cabs_df.loc[unique_cabs_df['condition_name'] == 'MPH', 'condition_order'] = 11
+
+unique_cabs_df["game_order"] = 100
+
+unique_cabs_df.loc[unique_cabs_df['game_name'] == 'MTG', 'game_order'] = 1
+unique_cabs_df.loc[unique_cabs_df['game_name'] == 'PKM', 'game_order'] = 2
+unique_cabs_df.loc[unique_cabs_df['game_name'] == 'YGO', 'game_order'] = 3
+
+
+unique_cabs_df.sort_values(by=['game_order', 'condition_order', 'CABINET'], ascending=[True, True, True], inplace=True)
+
+unique_cabs_df = unique_cabs_df[['CABINET']]
+
+##Write data to sheet
+doc404 = gc.open_by_key('1byDgGW9eefUTBr15dKygkt6lOpHPt9N_nuT9oV7gSvI')
+cabTab = doc404.worksheet('Cabinets')
+cabTab.batch_clear(['A1:D'])
+gd.set_with_dataframe(cabTab, cab_df, row=1, col=1)
+gd.set_with_dataframe(cabTab, unique_cabs_df, row=1, col=4)
 
 ##Update audit log
 csv_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Audit CSVs", "AuditLog.csv"]
