@@ -1624,7 +1624,7 @@ sq_err_df["combined"] = sq_err_df['Subtask'].astype(str) + sq_err_df['Task'].ast
 sq_err_df = pd.merge(sq_err_df, sq_error_res_standards_df, how='left', on='combined')
 
 ##Aggragete errors
-sq_err_df["total_errors"] = sq_err_df['Coeff 1 Units'].astype('float64').apply(pd.to_numeric, errors='coerce').fillna(0) + sq_err_df['Coeff 2 Units'].astype('float64').apply(pd.to_numeric, errors='coerce').fillna(0) + sq_err_df['Coeff 3 Units'].astype('float64').apply(pd.to_numeric, errors='coerce').fillna(0) + sq_err_df['Coeff 4 Units'].astype('float64').apply(pd.to_numeric, errors='coerce').fillna(0) + sq_err_df['Coeff 5 Units'].astype('float64').apply(pd.to_numeric, errors='coerce').fillna(0)
+sq_err_df["total_errors"] = sq_err_df['Coeff 1 Units'].apply(pd.to_numeric, errors='coerce').fillna(0).astype('float64') + sq_err_df['Coeff 2 Units'].apply(pd.to_numeric, errors='coerce').fillna(0).astype('float64') + sq_err_df['Coeff 3 Units'].apply(pd.to_numeric, errors='coerce').fillna(0).astype('float64') + sq_err_df['Coeff 4 Units'].apply(pd.to_numeric, errors='coerce').fillna(0).astype('float64') + sq_err_df['Coeff 5 Units'].apply(pd.to_numeric, errors='coerce').fillna(0).astype('float64')
 
 ##Calculate Metrics
 sq_err_df = sq_err_df.loc[(sq_err_df['adjusted_shift_length'].astype('float64') > 0) & (sq_err_df['Shift Name'] != 0)]
@@ -1747,7 +1747,7 @@ data_df = pd.concat([data_df, sq_err_df])
 
 data_df = pd.concat([data_df, rec_final_df])
 
-data_df = pd.concat([data_df, blo_final_df])
+#data_df = pd.concat([data_df, blo_final_df])
 
 data_df = pd.concat([data_df, paperless_df])
 

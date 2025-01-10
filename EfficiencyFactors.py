@@ -13,27 +13,6 @@ startTime = time.time()
 
 gc=gspread.service_account()
 
-import snowflake.connector
-from snowflake.connector import connect
-snowflake_pull = connect(user='Dave', password='Quantum314!', account='fva14998.us-east-1')
-
-##Define document
-efficFactorsDoc = gc.open_by_key('1dWEG8-WpJwRDUpQqIsJAqidj3bAv8sJZUoiSTWn8pwA')
-
-nuwayDataTab = efficFactorsDoc.worksheet('NuWayData')
-nuwayDataTab.batch_clear(['A3:A'])
-
-recDataTab = efficFactorsDoc.worksheet('RecData')
-recDataTab.clear()
-
-recAvlTab = efficFactorsDoc.worksheet('RecAvl')
-recAvlTab.clear()
-
-shpAvlTab = efficFactorsDoc.worksheet('ShpAvl')
-shpAvlTab.clear()
-
-time.sleep(15)
-
 ###Import NuWay Data
 nuwayDataTab_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Data CSVs", "NuWay", "TestEnvData.csv"]
 nuwayDataTab_result = separator.join(nuwayDataTab_string)
