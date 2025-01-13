@@ -97,7 +97,15 @@ shiftdata_df_2.rename(columns={'OPs Lead':'Manager'}, inplace=True)
 
 shiftdata_df = pd.concat([shiftdata_df, shiftdata_df_2])
 
-shiftdata_df = shiftdata_df[['Date', 'Primary Email', 'Regular Hours', 'Preferred Name', 'Manager', 'send_to_email', 'Shift Length', 'shift_check']]
+#shiftdata_df = shiftdata_df[['Date', 'Primary Email', 'Regular Hours', 'Preferred Name', 'Manager', 'send_to_email', 'Shift Length', 'shift_check']]
+
+shiftdata_df = shiftdata_df[['Date', 'Regular Hours', 'Preferred Name', 'Manager', 'Shift Length']]
+
+##Remove dupes
+shiftdata_df["dupes"] = shiftdata_df['Date'].astype(str) + shiftdata_df['Regular Hours'].astype(str) + shiftdata_df['Preferred Name'].astype(str) + shiftdata_df['Manager'].astype(str) + shiftdata_df['Shift Length'].astype(str)
+
+shiftdata_df.drop_duplicates(subset=['dupes'], inplace=True)
+shiftdata_df.drop('dupes', axis=1, inplace=True)
 
 ##Write data to sheet
 doc = gc.open_by_key('1s49W88YXNfqFG2BkBRV2_Vy1eBkqlfFv8k3nLMt-qP0')
