@@ -99,6 +99,35 @@ shiftdata_df = pd.concat([shiftdata_df, shiftdata_df_2])
 
 shiftdata_df = shiftdata_df[['Date', 'Primary Email', 'Regular Hours', 'Preferred Name', 'Manager', 'send_to_email', 'Shift Length', 'shift_check']]
 
+##Write data to sheet
+doc = gc.open_by_key('1s49W88YXNfqFG2BkBRV2_Vy1eBkqlfFv8k3nLMt-qP0')
+dataTab = doc.worksheet('Data')
+dataTab.clear()
+gd.set_with_dataframe(dataTab, shiftdata_df)
+
+##Update audit log
+csv_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Audit CSVs", "AuditLog.csv"]
+result = separator.join(csv_string)
+audit_df = pd.read_csv(result)
+
+executionTime = (time.time() - startTime)
+dt_string = datetime.now(pytz.timezone('America/New_York')).strftime("%m/%d/%Y %H:%M:%S")
+script_name = os.path.basename(__file__).replace('.py', '')
+
+new_audit = {'Timestamp': dt_string, 'Execution Time': executionTime, 'Script': script_name}
+
+new_audit_df = pd.DataFrame(data=new_audit, index=[0])
+
+audit_df = pd.concat([audit_df, new_audit_df])
+audit_df.dropna(subset=["Timestamp"], inplace=True)
+
+audit_df.to_csv(result, index=False)
+
+exit()
+
+
+
+
 ##Get list of unique managers
 managers_df = shiftdata_df.copy()
 managers_df = managers_df[['Manager']]
@@ -155,20 +184,16 @@ for i in range(len(managers_df)):
 
     send_email(send_to_email, Subject, send_to_df)
 
-##Update audit log
-csv_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Audit CSVs", "AuditLog.csv"]
-result = separator.join(csv_string)
-audit_df = pd.read_csv(result)
 
-executionTime = (time.time() - startTime)
-dt_string = datetime.now(pytz.timezone('America/New_York')).strftime("%m/%d/%Y %H:%M:%S")
-script_name = os.path.basename(__file__).replace('.py', '')
 
-new_audit = {'Timestamp': dt_string, 'Execution Time': executionTime, 'Script': script_name}
 
-new_audit_df = pd.DataFrame(data=new_audit, index=[0])
 
-audit_df = pd.concat([audit_df, new_audit_df])
-audit_df.dropna(subset=["Timestamp"], inplace=True)
 
-audit_df.to_csv(result, index=False)
+
+
+
+
+
+
+
+
