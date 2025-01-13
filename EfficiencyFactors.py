@@ -127,7 +127,7 @@ with
        select
         analytics.core.paperless_pulling_agg.shipping_queue_number as sq_number
         , min(analytics.core.paperless_pulling_agg.pulling_start) as pulling_start
-        //, max(analytics.core.paperless_pulling_agg.pulling_end) as pulling_end
+        , max(analytics.core.paperless_pulling_agg.pulling_end) as pulling_end
 
         from
         analytics.core.paperless_pulling_agg
