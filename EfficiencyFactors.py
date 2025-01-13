@@ -107,8 +107,8 @@ with
           shippingqueue.shippingqueuenumber as sq_number
           , shippingqueue.ordercount as order_count
           , shippingqueue.productcount as product_count
-          , shippingqueue.createdat as created_at
-          , shippingqueue.updatedat as last_updated_at
+          , convert_timezone('UTC', 'America/New_York', shippingqueue.createdat) as created_at
+          , convert_timezone('UTC', 'America/New_York', shippingqueue.updatedat) as last_updated_at
           , shippingqueuestatus.name as sq_status
 
       from
@@ -128,19 +128,21 @@ with
         analytics.core.paperless_pulling_agg.shipping_queue_number as sq_number
         , min(analytics.core.paperless_pulling_agg.pulling_start) as pulling_start
         , max(analytics.core.paperless_pulling_agg.pulling_end) as pulling_end
+        , analytics.core.paperless_pulling_agg.puller_email as puncher
 
         from
         analytics.core.paperless_pulling_agg
 
         where
             analytics.core.paperless_pulling_agg.pulling_end::date >= cast(dateadd(dd, -120, getdate()) as date)
-       group by 1
+       group by 1, 4
       )
 
 select
     sq_staging.*
     , paperless_pull_staging.pulling_start
     , paperless_pull_staging.pulling_end
+    , paperless_pull_staging.puncher
 
 from sq_staging
     left outer join paperless_pull_staging on sq_staging.sq_number = paperless_pull_staging.sq_number
@@ -155,9 +157,35 @@ shp_avl_df = cursor.fetch_pandas_all()
 shp_avl_df.drop(shp_avl_df.filter(like='Unnamed'), axis=1, inplace=True)
 shp_avl_df.dropna(subset=['SQ_NUMBER'], inplace=True)
 
+##Import Staffing Data
+staffing = gc.open_by_key('1sBVK5vjiB72JuKePpht2R4vZ4ShxuZKjQreE8FE7068').worksheet('Current Staff')
+staffing_df = pd.DataFrame.from_dict(staffing.get_all_records())
+staffing_df.dropna(subset=["Preferred Name"], inplace=True)
+staffing_df = staffing_df[['Preferred Name', 'Email', 'Shift Length','Shift Name', 'Start Date', 'Supervisor', 'OPs Lead', 'Last, First (Formatting)']]
+staffing_df.rename(columns={'Email':'Puncher'}, inplace=True)
 
-shp_avl_df['PULLING_START'] = pd.to_datetime(shp_avl_df['PULLING_START'])
-shp_avl_df["first_offset"] = shp_avl_df['PULLING_START'] - timedelta(hours = 12)
+staffing_df['Puncher'] = staffing_df['Puncher'].str.lower()
+
+nameChanges = gc.open_by_key('1sBVK5vjiB72JuKePpht2R4vZ4ShxuZKjQreE8FE7068').worksheet('NameChanges')
+nameChanges_df = pd.DataFrame.from_dict(nameChanges.get_all_records())
+nameChanges_df.dropna(subset=['Current Preferred Name'], inplace=True)
+nameChanges_df.rename(columns={'Current Preferred Name':'Preferred Name'}, inplace=True)
+
+slimNameChanges_df = nameChanges_df.copy()
+slimNameChanges_df.rename(columns={'Former Email':'Primary Email'}, inplace=True)
+
+nameChanges_df = pd.merge(nameChanges_df, staffing_df, how='left', on='Preferred Name')
+nameChanges_df.drop(['Former Preferred Name', 'Current Email', 'Puncher'], axis=1, inplace=True)
+nameChanges_df.rename(columns={'Former Email':'Puncher'}, inplace=True)
+
+staffing_df = pd.concat([staffing_df, nameChanges_df])
+
+shp_avl_df['PUNCHER'] = shp_avl_df['PUNCHER'].str.lower()
+shp_avl_df.rename(columns={'PUNCHER':'Puncher'}, inplace=True)
+
+shp_avl_df = pd.merge(shp_avl_df, staffing_df, how='left', on='Puncher')
+
+shp_avl_df = shp_avl_df[['SQ_NUMBER', 'ORDER_COUNT', 'PRODUCT_COUNT', 'CREATED_AT', 'LAST_UPDATED_AT', 'SQ_STATUS', 'PULLING_START', 'PULLING_END', 'Shift Name']]
 
 ##Write to sheet
 gd.set_with_dataframe(shpAvlTab, shp_avl_df)
