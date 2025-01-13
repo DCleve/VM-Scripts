@@ -21,11 +21,7 @@ snowflake_pull = connect(user='Dave', password='Quantum314!', account='fva14998.
 efficFactorsDoc = gc.open_by_key('1dWEG8-WpJwRDUpQqIsJAqidj3bAv8sJZUoiSTWn8pwA')
 
 nuwayDataTab = efficFactorsDoc.worksheet('NuWayData')
-<<<<<<<<< Temporary merge branch 1
-nuwayDataTab.batch_clear(['A2:A'])
-=========
 nuwayDataTab.batch_clear(['A3:A'])
->>>>>>>>> Temporary merge branch 2
 
 recDataTab = efficFactorsDoc.worksheet('RecData')
 recDataTab.clear()
@@ -72,6 +68,8 @@ select
     , reimbursement_invoices.received_at_et as received_at
     , reimbursement_invoices.active_processing_started_at_et as proc_started_at
     , reimbursement_invoices.processing_ended_at_et as proc_ended_at
+    , reimbursement_invoices.shelved_at_et as shelved_at
+
 
 from
 analytics.core.reimbursement_invoices
@@ -79,11 +77,11 @@ inner join analytics.core.reimbursement_invoice_products on reimbursement_invoic
 
 where
 reimbursement_invoices.received_at_et is not null
-//and reimbursement_invoices.status != 'Processing'
 and reimbursement_invoices.is_auto = false
 and reimbursement_invoices.seller_id != 249
 and inspection_level is not null
 and reimbursement_invoices.received_at_et::date >= cast(dateadd(dd, -120, getdate()) as date)
+and reimbursement_invoices.was_marked_missing = false
 
 
 order by
@@ -112,8 +110,6 @@ with
           , shippingqueue.createdat as created_at
           , shippingqueue.updatedat as last_updated_at
           , shippingqueuestatus.name as sq_status
-
-
 
       from
       hvr_tcgstore_production.tcgd.shippingqueue
@@ -144,7 +140,7 @@ with
 select
     sq_staging.*
     , paperless_pull_staging.pulling_start
-    //, paperless_pull_staging.pulling_end
+    , paperless_pull_staging.pulling_end
 
 from sq_staging
     left outer join paperless_pull_staging on sq_staging.sq_number = paperless_pull_staging.sq_number
