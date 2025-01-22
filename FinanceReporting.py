@@ -88,7 +88,7 @@ select
     , ri_staging.seller_order_status as "Seller Order Status"
     , ri_staging.quantity as "Sold Product Quantity"
     , ri_staging.total_usd as "Sold Product Amount USD"
-    //, ri_staging.reimbursement_invoice_number as "RI Number"
+    , ri_staging.reimbursement_invoice_number as "RI Number"
     , ri_staging.created_at_et::date as "RI Created Date"
     , ri_staging.received_at_et::date as "RI Received Date"
     , ri_staging.processing_ended_at_et::date as "RI Processing Date"
@@ -102,7 +102,7 @@ select
 
 from ri_staging
 inner join created_dates_per_so on ri_staging.seller_order_number = created_dates_per_so.seller_order_number
-where created_dates_per_so.number_of_created_at_dates > 1
+//where created_dates_per_so.number_of_created_at_dates > 1
 
 """)
 
@@ -113,37 +113,15 @@ ri_df = cursor.fetch_pandas_all()
 ri_df.drop(ri_df.filter(like='Unnamed'), axis=1, inplace=True)
 #ri_df.dropna(subset = ['SELLER ORDER NUMBER'], inplace=True)
 
-ri_df = ri_df [['Seller Order Number', 'Seller ID', 'Sold Product Quantity', 'Sold Product Amount USD', 'Ordered Date', 'Seller Paid Date', 'RI Created Date', 'RI Received Date', 'RI Processing Date', 'RI Shelved Date', 'RI Type', 'When Was Seller Paid?', 'Seller Order Status', 'Package Left the AC?']]
+#ri_df = ri_df [['Seller Order Number', 'Seller ID', 'Sold Product Quantity', 'Sold Product Amount USD', 'Ordered Date', 'Seller Paid Date', 'RI Created Date', 'RI Received Date', 'RI Processing Date', 'RI Shelved Date', 'RI Type', 'When Was Seller Paid?', 'Seller Order Status', 'Package Left the AC?']]
+
+ri_df = ri_df[['Sold Product Amount USD', 'When Was Seller Paid?', 'Seller Paid Date', 'Sold Product Quantity']]
+
+
+
 
 ##Create data csv
-rec_norm_string = ["C:", "Users", login, "Desktop", "Rec.csv"]
+rec_norm_string = ["C:", "Users", login, "Desktop", "FinanceReporting.csv"]
 rec_norm_result = separator.join(rec_norm_string)
 ri_df.to_csv(rec_norm_result, index=False)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
