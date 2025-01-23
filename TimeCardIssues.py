@@ -97,63 +97,21 @@ shiftdata_df_2.rename(columns={'OPs Lead':'Manager'}, inplace=True)
 
 shiftdata_df = pd.concat([shiftdata_df, shiftdata_df_2])
 
-shiftdata_df = shiftdata_df[['Date', 'Primary Email', 'Regular Hours', 'Preferred Name', 'Manager', 'send_to_email', 'Shift Length', 'shift_check']]
+#shiftdata_df = shiftdata_df[['Date', 'Primary Email', 'Regular Hours', 'Preferred Name', 'Manager', 'send_to_email', 'Shift Length', 'shift_check']]
 
-##Get list of unique managers
-managers_df = shiftdata_df.copy()
-managers_df = managers_df[['Manager']]
-managers_df.drop_duplicates(subset=['Manager'], inplace=True)
+shiftdata_df = shiftdata_df[['Date', 'Regular Hours', 'Preferred Name', 'Manager', 'Shift Length']]
 
-managers_df = pd.merge(managers_df, staffing_df, left_on='Manager', right_on='Preferred Name')
+##Remove dupes
+shiftdata_df["dupes"] = shiftdata_df['Date'].astype(str) + shiftdata_df['Regular Hours'].astype(str) + shiftdata_df['Preferred Name'].astype(str) + shiftdata_df['Manager'].astype(str) + shiftdata_df['Shift Length'].astype(str)
 
-managers_df = managers_df[['Manager', 'Puncher']]
+shiftdata_df.drop_duplicates(subset=['dupes'], inplace=True)
+shiftdata_df.drop('dupes', axis=1, inplace=True)
 
-##send emails
-from email.mime.application import MIMEApplication
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import pandas as pd
-import smtplib
-
-def send_email(send_to, subject, df):
-    send_from = "ac.data@tcgplayer-acw.com"
-    password = "TcGp!TcGp!"
-
-    if (len(df) > 0):
-        message = "Greetings " + supervisor_or_lead + "! The potential time card issues for the past 2 weeks are attached."
-
-    multipart = MIMEMultipart()
-    multipart["From"] = send_from
-    multipart["To"] = send_to_email
-    multipart["Subject"] = subject
-
-    if(len(df) > 0):
-        attachment = MIMEApplication(send_to_df.to_csv(index=False))
-        attachment["Content-Disposition"] = "attachment; filename={}".format(f"TimeCardIssues.csv")
-        multipart.attach(attachment)
-
-        multipart.attach(MIMEText(message, "html"))
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(multipart["From"], password)
-        server.sendmail(multipart["From"], multipart["To"], multipart.as_string())
-        server.quit()
-
-
-Subject = "Potential time card issues for the past 2 weeks."
-
-for i in range(len(managers_df)):
-    supervisor_or_lead = managers_df.iloc[i, 0]
-    send_to_email = managers_df.iloc[i, 1]
-    send_to_df = shiftdata_df.loc[shiftdata_df['send_to_email'] == send_to_email]
-
-    send_to_df = send_to_df[['Date', 'Preferred Name', 'Regular Hours', 'Shift Length']]
-
-    print(supervisor_or_lead)
-    print(send_to_email)
-    print(send_to_df)
-
-    send_email(send_to_email, Subject, send_to_df)
+##Write data to sheet
+doc = gc.open_by_key('1s49W88YXNfqFG2BkBRV2_Vy1eBkqlfFv8k3nLMt-qP0')
+dataTab = doc.worksheet('Data')
+dataTab.clear()
+gd.set_with_dataframe(dataTab, shiftdata_df)
 
 ##Update audit log
 csv_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Audit CSVs", "AuditLog.csv"]
@@ -172,3 +130,64 @@ audit_df = pd.concat([audit_df, new_audit_df])
 audit_df.dropna(subset=["Timestamp"], inplace=True)
 
 audit_df.to_csv(result, index=False)
+
+
+
+x = 0
+
+if(x == 1):
+    ##Get list of unique managers
+    managers_df = shiftdata_df.copy()
+    managers_df = managers_df[['Manager']]
+    managers_df.drop_duplicates(subset=['Manager'], inplace=True)
+
+    managers_df = pd.merge(managers_df, staffing_df, left_on='Manager', right_on='Preferred Name')
+
+    managers_df = managers_df[['Manager', 'Puncher']]
+
+    ##send emails
+    from email.mime.application import MIMEApplication
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    import pandas as pd
+    import smtplib
+
+    def send_email(send_to, subject, df):
+        send_from = "ac.data@tcgplayer-acw.com"
+        password = "TcGp!TcGp!"
+
+        if (len(df) > 0):
+            message = "Greetings " + supervisor_or_lead + "! The potential time card issues for the past 2 weeks are attached."
+
+        multipart = MIMEMultipart()
+        multipart["From"] = send_from
+        multipart["To"] = send_to_email
+        multipart["Subject"] = subject
+
+        if(len(df) > 0):
+            attachment = MIMEApplication(send_to_df.to_csv(index=False))
+            attachment["Content-Disposition"] = "attachment; filename={}".format(f"TimeCardIssues.csv")
+            multipart.attach(attachment)
+
+            multipart.attach(MIMEText(message, "html"))
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.login(multipart["From"], password)
+            server.sendmail(multipart["From"], multipart["To"], multipart.as_string())
+            server.quit()
+
+
+    Subject = "Potential time card issues for the past 2 weeks."
+
+    for i in range(len(managers_df)):
+        supervisor_or_lead = managers_df.iloc[i, 0]
+        send_to_email = managers_df.iloc[i, 1]
+        send_to_df = shiftdata_df.loc[shiftdata_df['send_to_email'] == send_to_email]
+
+        send_to_df = send_to_df[['Date', 'Preferred Name', 'Regular Hours', 'Shift Length']]
+
+        print(supervisor_or_lead)
+        print(send_to_email)
+        print(send_to_df)
+
+        send_email(send_to_email, Subject, send_to_df)
