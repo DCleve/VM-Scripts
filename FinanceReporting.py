@@ -36,14 +36,11 @@ with
             , seller_orders.seller_id
             , seller_orders.ordered_at_et
 
-            , case
-                when reimbursement_invoices.reimbursement_invoice_number like '%STD%' then 'Standard'
-                when reimbursement_invoices.reimbursement_invoice_number like '%PRF%' then 'Preferred'
-              end as ri_type
+            , split_part(reimbursement_invoices.reimbursement_invoice_number, '-', 3) as ri_type
             , case
                 when seller_orders.seller_paid_date <= reimbursement_invoices.created_at_et then 'Before RI Creation'
-                when seller_orders.seller_paid_date <= reimbursement_invoices.received_at_et then 'Before RI Receipt'
-                when seller_orders.seller_paid_date <= reimbursement_invoices.processing_ended_at_et then 'Before RI Processing'
+                when seller_orders.seller_paid_date < reimbursement_invoices.received_at_et then 'Before RI Receipt'
+                when seller_orders.seller_paid_date < reimbursement_invoices.processing_ended_at_et then 'Before RI Processing'
                 when seller_orders.seller_paid_date is not null then 'After RI Finalization'
                 when seller_orders.seller_paid_date is null then 'Payment to be Scheduled'
                 else null
@@ -70,6 +67,7 @@ with
             and seller_orders.seller_id != 249
             and sellers.is_store_your_products = false
             and len(reimbursement_invoices.reimbursement_invoice_number) = 26
+            and ri_type in('PRF', 'STD')
     )
 
     , created_dates_per_so as (
@@ -83,21 +81,21 @@ with
     )
 
 select
-    ri_staging.seller_order_number as "Seller Order Number"
-    , ri_staging.seller_paid_date::date as "Seller Paid Date"
-    , ri_staging.seller_order_status as "Seller Order Status"
+    //ri_staging.seller_order_number as "Seller Order Number"
+    ri_staging.seller_paid_date::date as "Seller Paid Date"
+    //, ri_staging.seller_order_status as "Seller Order Status"
     , ri_staging.quantity as "Sold Product Quantity"
     , ri_staging.total_usd as "Sold Product Amount USD"
-    , ri_staging.reimbursement_invoice_number as "RI Number"
-    , ri_staging.created_at_et::date as "RI Created Date"
-    , ri_staging.received_at_et::date as "RI Received Date"
-    , ri_staging.processing_ended_at_et::date as "RI Processing Date"
-    , ri_staging.shelved_at_et::date as "RI Shelved Date"
-    , ri_staging.ri_type as "RI Type"
+    //, ri_staging.reimbursement_invoice_number as "RI Number"
+    //, ri_staging.created_at_et::date as "RI Created Date"
+    //, ri_staging.received_at_et::date as "RI Received Date"
+    //, ri_staging.processing_ended_at_et::date as "RI Processing Date"
+    //, ri_staging.shelved_at_et::date as "RI Shelved Date"
+    //, ri_staging.ri_type as "RI Type"
     , ri_staging.when_was_seller_paid as "When Was Seller Paid?"
-    , ri_staging.package_left_ac as "Package Left the AC?"
-    , ri_staging.seller_id as "Seller ID"
-    , ri_staging.ordered_at_et::date as "Ordered Date"
+    //, ri_staging.package_left_ac as "Package Left the AC?"
+    //, ri_staging.seller_id as "Seller ID"
+    //, ri_staging.ordered_at_et::date as "Ordered Date"
     //, created_dates_per_so.number_of_created_at_dates as "Timestamps per Seller Order"
 
 from ri_staging
@@ -117,11 +115,22 @@ ri_df.drop(ri_df.filter(like='Unnamed'), axis=1, inplace=True)
 
 ri_df = ri_df[['Sold Product Amount USD', 'When Was Seller Paid?', 'Seller Paid Date', 'Sold Product Quantity']]
 
+##Aggragate data
+ri_df["combined"] = ri_df['Seller Paid Date'].astype(str) + ri_df['When Was Seller Paid?'].astype(str)
 
+dollar_amount = ri_df.groupby('combined')['Sold Product Amount USD'].sum()
+ri_df = pd.merge(ri_df, dollar_amount, how='right', on='combined')
+ri_df.rename(columns={'Sold Product Amount USD_x':'Sold Product Amount USD', 'Sold Product Amount USD_y':'dollar_amount_per_day'}, inplace=True)
 
+product_quantity = ri_df.groupby('combined')['Sold Product Quantity'].sum()
+ri_df = pd.merge(ri_df, product_quantity, how='right', on='combined')
+ri_df.rename(columns={'Sold Product Quantity_x':'Sold Product Quantity', 'Sold Product Quantity_y':'product_amount_per_day'}, inplace=True)
 
-##Create data csv
-rec_norm_string = ["C:", "Users", login, "Desktop", "FinanceReporting.csv"]
-rec_norm_result = separator.join(rec_norm_string)
-ri_df.to_csv(rec_norm_result, index=False)
+ri_df.drop_duplicates(subset='combined', inplace=True)
 
+ri_df = ri_df[['Seller Paid Date', 'When Was Seller Paid?', 'dollar_amount_per_day', 'product_amount_per_day']]
+
+##Write Data to sheet
+finTab = gc.open_by_key('10uGqyQKL8Igby5hFa6fH9sfY4t_eqztK3qodLMJZrrU').worksheet('Data')
+finTab.clear()
+gd.set_with_dataframe(finTab, ri_df)
