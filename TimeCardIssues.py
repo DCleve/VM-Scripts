@@ -131,77 +131,63 @@ audit_df.dropna(subset=["Timestamp"], inplace=True)
 
 audit_df.to_csv(result, index=False)
 
-exit()
 
 
+x = 0
+
+if(x == 1):
+    ##Get list of unique managers
+    managers_df = shiftdata_df.copy()
+    managers_df = managers_df[['Manager']]
+    managers_df.drop_duplicates(subset=['Manager'], inplace=True)
+
+    managers_df = pd.merge(managers_df, staffing_df, left_on='Manager', right_on='Preferred Name')
+
+    managers_df = managers_df[['Manager', 'Puncher']]
+
+    ##send emails
+    from email.mime.application import MIMEApplication
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    import pandas as pd
+    import smtplib
+
+    def send_email(send_to, subject, df):
+        send_from = "ac.data@tcgplayer-acw.com"
+        password = "TcGp!TcGp!"
+
+        if (len(df) > 0):
+            message = "Greetings " + supervisor_or_lead + "! The potential time card issues for the past 2 weeks are attached."
+
+        multipart = MIMEMultipart()
+        multipart["From"] = send_from
+        multipart["To"] = send_to_email
+        multipart["Subject"] = subject
+
+        if(len(df) > 0):
+            attachment = MIMEApplication(send_to_df.to_csv(index=False))
+            attachment["Content-Disposition"] = "attachment; filename={}".format(f"TimeCardIssues.csv")
+            multipart.attach(attachment)
+
+            multipart.attach(MIMEText(message, "html"))
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.login(multipart["From"], password)
+            server.sendmail(multipart["From"], multipart["To"], multipart.as_string())
+            server.quit()
 
 
-##Get list of unique managers
-managers_df = shiftdata_df.copy()
-managers_df = managers_df[['Manager']]
-managers_df.drop_duplicates(subset=['Manager'], inplace=True)
+    Subject = "Potential time card issues for the past 2 weeks."
 
-managers_df = pd.merge(managers_df, staffing_df, left_on='Manager', right_on='Preferred Name')
+    for i in range(len(managers_df)):
+        supervisor_or_lead = managers_df.iloc[i, 0]
+        send_to_email = managers_df.iloc[i, 1]
+        send_to_df = shiftdata_df.loc[shiftdata_df['send_to_email'] == send_to_email]
 
-managers_df = managers_df[['Manager', 'Puncher']]
+        send_to_df = send_to_df[['Date', 'Preferred Name', 'Regular Hours', 'Shift Length']]
 
-##send emails
-from email.mime.application import MIMEApplication
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import pandas as pd
-import smtplib
+        print(supervisor_or_lead)
+        print(send_to_email)
+        print(send_to_df)
 
-def send_email(send_to, subject, df):
-    send_from = "ac.data@tcgplayer-acw.com"
-    password = "TcGp!TcGp!"
-
-    if (len(df) > 0):
-        message = "Greetings " + supervisor_or_lead + "! The potential time card issues for the past 2 weeks are attached."
-
-    multipart = MIMEMultipart()
-    multipart["From"] = send_from
-    multipart["To"] = send_to_email
-    multipart["Subject"] = subject
-
-    if(len(df) > 0):
-        attachment = MIMEApplication(send_to_df.to_csv(index=False))
-        attachment["Content-Disposition"] = "attachment; filename={}".format(f"TimeCardIssues.csv")
-        multipart.attach(attachment)
-
-        multipart.attach(MIMEText(message, "html"))
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(multipart["From"], password)
-        server.sendmail(multipart["From"], multipart["To"], multipart.as_string())
-        server.quit()
-
-
-Subject = "Potential time card issues for the past 2 weeks."
-
-for i in range(len(managers_df)):
-    supervisor_or_lead = managers_df.iloc[i, 0]
-    send_to_email = managers_df.iloc[i, 1]
-    send_to_df = shiftdata_df.loc[shiftdata_df['send_to_email'] == send_to_email]
-
-    send_to_df = send_to_df[['Date', 'Preferred Name', 'Regular Hours', 'Shift Length']]
-
-    print(supervisor_or_lead)
-    print(send_to_email)
-    print(send_to_df)
-
-    send_email(send_to_email, Subject, send_to_df)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        send_email(send_to_email, Subject, send_to_df)
