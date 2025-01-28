@@ -80,21 +80,3 @@ paperless_df = paperless_df[['SQ', 'PUNCH', 'CARDS_PULLED', 'DENSITY_PULLED', 'P
 pp_analysis_data_tab = gc.open_by_key('1LRB-_tLF6kUlIUemkp_o7gakH_pAvy990GWtmbbDa_Y').worksheet('Data')
 pp_analysis_data_tab.clear()
 gd.set_with_dataframe(pp_analysis_data_tab, paperless_df)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
