@@ -116,8 +116,8 @@ gd.set_with_dataframe(staffingtab, staffing_df)
 archivetab.clear()
 gd.set_with_dataframe(archivetab, nuway_df)
 
-sqDataTab.clear()
-gd.set_with_dataframe(sqDataTab, pvp_df)
+sqDataTab.batch_clear(['A1:G'])
+gd.set_with_dataframe(sqDataTab, pvp_df, row=1, col=1)
 
 cell_list = workflow.worksheet('PVPDashPt2').range('M1')
 for cell in cell_list:

@@ -215,6 +215,7 @@ gd.set_with_dataframe(dataTab, data_df, row=1, col=1)
 paperless_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Data CSVs", "Snowflake", "Paperless.csv"]
 paperless_result = separator.join(paperless_string)
 paperless_df = pd.read_csv(paperless_result)
+paperless_df = paperless_df[['PUNCHER', 'SQ', 'PUNCH', 'CARDS_PULLED', 'DENSITY_PULLED', 'PAUSED_TIME_SECONDS', 'pulling_time_hours', 'sq_type', 'PULLING_START']]
 
 ##Write ppdata to sheet
 ppDataTab = gc.open_by_key('1tdlE-_-rACdf2GyWE5SWSdPQ5P5X38Ec40iN1HaS8Mo').worksheet('PPData')
