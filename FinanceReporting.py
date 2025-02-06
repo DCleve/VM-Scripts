@@ -30,6 +30,9 @@ with
         , concat(pcid, ri_number) as identifier
         , seller_orders.seller_paid_date::date as "Seller Paid Date"
         , order_items.quantity as "Sold Product Quantity"
+        , reimbursement_invoices.received_at_et::date as "receipt_date"
+        , reimbursement_invoices.processing_ended_at_et::date as "processing_date"
+        , reimbursement_invoices.shelved_at_et::date as "shelving_date"
         , case
           when seller_orders.seller_paid_date is null then 'Payment to be Scheduled'
           when (seller_orders.seller_paid_date <= reimbursement_invoices.created_at_et) or (reimbursement_invoices.created_at_et is null) then 'Before RI Creation'
@@ -38,6 +41,7 @@ with
           when seller_orders.seller_paid_date is not null then 'After RI Finalization'
           else null
         end as "When Was Seller Paid?"
+        , reimbursement_invoices.was_marked_missing as "was_marked_missing"
 
       from analytics.core.reimbursement_invoices
         left outer join hvr_tcgstore_production.tcgd.ReimOrderSellerOrderProduct on hvr_tcgstore_production.tcgd.ReimOrderSellerOrderProduct.ReimOrderId = analytics.core.reimbursement_invoices.id
@@ -89,9 +93,27 @@ cursor.execute(sql_ri)
 ri_df = cursor.fetch_pandas_all()
 ri_df.drop(ri_df.filter(like='Unnamed'), axis=1, inplace=True)
 
-ri_df = ri_df[['Sold Product Amount USD', 'When Was Seller Paid?', 'Seller Paid Date', 'Sold Product Quantity', 'Total Discreps']]
+ri_df = ri_df[['Sold Product Amount USD', 'When Was Seller Paid?', 'Seller Paid Date', 'Sold Product Quantity', 'Total Discreps', 'receipt_date', 'processing_date', 'shelving_date', 'was_marked_missing']]
 
 ri_df["lost_to_discreps"] = ri_df['Sold Product Amount USD'].astype('float64') * ri_df['Total Discreps'].astype('float64')
+
+ri_df["cards_awaiting_receipt"] = 0.0
+ri_df["value_awaiting_receipt"] = 0.0
+
+ri_df["cards_awaiting_processing"] = 0.0
+ri_df["value_awaiting_processing"] = 0.0
+
+ri_df["cards_awaiting_shelving"] = 0.0
+ri_df["value_awaiting_shelving"] = 0.0
+
+ri_df.loc[(ri_df['When Was Seller Paid?'] == 'Before RI Creation') & (pd.isnull(ri_df['receipt_date']) == True) & (ri_df['was_marked_missing'] == False), 'cards_awaiting_receipt'] = ri_df['Sold Product Quantity']
+ri_df.loc[(ri_df['When Was Seller Paid?'] == 'Before RI Creation') & (pd.isnull(ri_df['receipt_date']) == True) & (ri_df['was_marked_missing'] == False), 'value_awaiting_receipt'] = ri_df['Sold Product Amount USD']
+
+ri_df.loc[(ri_df['When Was Seller Paid?'] == 'Before RI Receipt') & (pd.isnull(ri_df['processing_date']) == True) & (ri_df['was_marked_missing'] == False), 'cards_awaiting_processing'] = ri_df['Sold Product Quantity']
+ri_df.loc[(ri_df['When Was Seller Paid?'] == 'Before RI Receipt') & (pd.isnull(ri_df['processing_date']) == True) & (ri_df['was_marked_missing'] == False), 'value_awaiting_processing'] = ri_df['Sold Product Amount USD']
+
+ri_df.loc[(ri_df['When Was Seller Paid?'] == 'Before RI Processing') & (pd.isnull(ri_df['shelving_date']) == True) & (ri_df['was_marked_missing'] == False), 'cards_awaiting_shelving'] = ri_df['Sold Product Quantity']
+ri_df.loc[(ri_df['When Was Seller Paid?'] == 'Before RI Processing') & (pd.isnull(ri_df['shelving_date']) == True) & (ri_df['was_marked_missing'] == False), 'value_awaiting_shelving'] = ri_df['Sold Product Amount USD']
 
 ##Aggragate data
 ri_df["combined"] = ri_df['Seller Paid Date'].astype(str) + ri_df['When Was Seller Paid?'].astype(str)
@@ -112,9 +134,33 @@ total_discreps = ri_df.groupby('combined')['Total Discreps'].sum()
 ri_df = pd.merge(ri_df, total_discreps, how='right', on='combined')
 ri_df.rename(columns={'Total Discreps_x':'Total Discreps', 'Total Discreps_y':'total_discreps_per_day_per_category'}, inplace=True)
 
+cards_awaiting_receipt = ri_df.groupby('combined')['cards_awaiting_receipt'].sum()
+ri_df = pd.merge(ri_df, cards_awaiting_receipt, how='right', on='combined')
+ri_df.rename(columns={'cards_awaiting_receipt_x':'cards_awaiting_receipt', 'cards_awaiting_receipt_y':'total_cards_awaiting_receipt'}, inplace=True)
+
+value_awaiting_receipt = ri_df.groupby('combined')['value_awaiting_receipt'].sum()
+ri_df = pd.merge(ri_df, value_awaiting_receipt, how='right', on='combined')
+ri_df.rename(columns={'value_awaiting_receipt_x':'value_awaiting_receipt', 'value_awaiting_receipt_y':'total_value_awaiting_receipt'}, inplace=True)
+
+cards_awaiting_processing = ri_df.groupby('combined')['cards_awaiting_processing'].sum()
+ri_df = pd.merge(ri_df, cards_awaiting_processing, how='right', on='combined')
+ri_df.rename(columns={'cards_awaiting_processing_x':'cards_awaiting_processing', 'cards_awaiting_processing_y':'total_cards_awaiting_processing'}, inplace=True)
+
+value_awaiting_processing = ri_df.groupby('combined')['value_awaiting_processing'].sum()
+ri_df = pd.merge(ri_df, value_awaiting_processing, how='right', on='combined')
+ri_df.rename(columns={'value_awaiting_processing_x':'value_awaiting_processing', 'value_awaiting_processing_y':'total_value_awaiting_processing'}, inplace=True)
+
+cards_awaiting_shelving = ri_df.groupby('combined')['cards_awaiting_shelving'].sum()
+ri_df = pd.merge(ri_df, cards_awaiting_shelving, how='right', on='combined')
+ri_df.rename(columns={'cards_awaiting_shelving_x':'cards_awaiting_shelving', 'cards_awaiting_shelving_y':'total_cards_awaiting_shelving'}, inplace=True)
+
+value_awaiting_shelving = ri_df.groupby('combined')['value_awaiting_shelving'].sum()
+ri_df = pd.merge(ri_df, value_awaiting_shelving, how='right', on='combined')
+ri_df.rename(columns={'value_awaiting_shelving_x':'value_awaiting_shelving', 'value_awaiting_shelving_y':'total_value_awaiting_shelving'}, inplace=True)
+
 ri_df.drop_duplicates(subset='combined', inplace=True)
 
-ri_df = ri_df[['Seller Paid Date', 'When Was Seller Paid?', 'dollar_amount_per_day', 'product_amount_per_day', 'total_discreps_per_day_per_category', 'dollars_recouped_from_discreps_per_day_per_category']]
+ri_df = ri_df[['Seller Paid Date', 'When Was Seller Paid?', 'dollar_amount_per_day', 'product_amount_per_day', 'total_discreps_per_day_per_category', 'dollars_recouped_from_discreps_per_day_per_category', 'total_cards_awaiting_receipt', 'total_value_awaiting_receipt', 'total_cards_awaiting_processing', 'total_value_awaiting_processing', 'total_cards_awaiting_shelving', 'total_value_awaiting_shelving']]
 
 ##Write Data to sheet
 finTab = gc.open_by_key('10uGqyQKL8Igby5hFa6fH9sfY4t_eqztK3qodLMJZrrU').worksheet('Data')

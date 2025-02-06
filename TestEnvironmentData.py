@@ -1759,7 +1759,8 @@ data_df = pd.merge(data_df, day_per_agg, how='right', on='combined')
 
 data_df.rename(columns={'Day %_y':'Total_Day_%', 'Day %_x':'Day %'}, inplace=True)
 
-data_df['Total_Day_%'] = data_df['Total_Day_%'] + 0.0833
+#data_df['Total_Day_%'] = data_df['Total_Day_%'] + 0.0833
+data_df['Total_Day_%'] = data_df['Total_Day_%']
 
 data_df["Total_Earned_Hours"] = ((data_df['Regular Hours'].astype('float64'))/24) * data_df['Total_Day_%']
 data_df["Earned_Hours"] = ((data_df['adjusted_shift_length'])/24) * data_df['Day %']
