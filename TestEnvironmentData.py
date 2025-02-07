@@ -1525,7 +1525,8 @@ sq_err_df['QUEUE_NUMBER'] = sq_err_df['QUEUE_NUMBER'].str.lower()
 ##Find dupes
 sq_error_res_df["Dupe"] = sq_error_res_df['Punch'].astype(str) + sq_error_res_df['Puncher'].astype(str) + sq_error_res_df['Subtask'].astype(str)
 
-sq_error_res_dupe_df = sq_error_res_df[sq_error_res_df.duplicated(subset=['Dupe'], keep=False)]
+sq_error_res_dupe_df = sq_error_res_df.copy()
+sq_error_res_dupe_df = sq_error_res_dupe_df[sq_error_res_dupe_df.duplicated(subset=['Dupe'], keep=False)]
 sq_error_res_dupe_df.drop_duplicates(subset=['Dupe'], inplace=True)
 sq_error_res_dupe_df.loc[sq_error_res_dupe_df['Dupe'] != '', 'Dupe'] = "Error"
 sq_error_res_dupe_df = sq_error_res_dupe_df[['Punch', 'Puncher', 'Task', 'Subtask', 'Units', 'Orders Completed', 'Flex Run', 'Env Run', 'Dupe']]
