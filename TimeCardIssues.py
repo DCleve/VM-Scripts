@@ -57,7 +57,7 @@ shiftdata_df.loc[(shiftdata_df['Role'] == 'FC Generalist Overnight') & (shiftdat
 shiftdata_df.dropna(subset=['Date'], inplace=True)
 
 ##Shift check
-shiftdata_df["shift_check"] = shiftdata_df['Regular Hours'].astype('float64') / shiftdata_df['Shift Length'].astype('float64')
+shiftdata_df["shift_check"] = shiftdata_df['Regular Hours'].apply(pd.to_numeric, errors='coerce').astype('float64') / shiftdata_df['Shift Length'].apply(pd.to_numeric, errors='coerce').astype('float64')
 
 shiftdata_df = shiftdata_df.loc[(shiftdata_df['shift_check'] < 0.67) | (shiftdata_df['shift_check'] > 1.1)]
 
