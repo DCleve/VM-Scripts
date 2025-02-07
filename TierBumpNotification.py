@@ -35,7 +35,7 @@ hours_df.rename(columns={'Primary Email':'Team Member'}, inplace=True)
 
 ##Combine Staffing and Tier information
 hours_df = pd.merge(hours_df, staffing_df, how='left', on='Team Member')
-hours_df = hours_df.loc[hours_df['Shift Length'].astype('float64') > 0]
+hours_df = hours_df.loc[hours_df['Shift Length'].apply(pd.to_numeric, errors='coerce').astype('float64') > 0]
 
 hours_df['Date'] = pd.to_datetime(hours_df['Date'])
 
