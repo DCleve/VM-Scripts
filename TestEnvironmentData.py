@@ -1525,7 +1525,8 @@ sq_err_df['QUEUE_NUMBER'] = sq_err_df['QUEUE_NUMBER'].str.lower()
 ##Find dupes
 sq_error_res_df["Dupe"] = sq_error_res_df['Punch'].astype(str) + sq_error_res_df['Puncher'].astype(str) + sq_error_res_df['Subtask'].astype(str)
 
-sq_error_res_dupe_df = sq_error_res_df[sq_error_res_df.duplicated(subset=['Dupe'], keep=False)]
+sq_error_res_dupe_df = sq_error_res_df.copy()
+sq_error_res_dupe_df = sq_error_res_dupe_df[sq_error_res_dupe_df.duplicated(subset=['Dupe'], keep=False)]
 sq_error_res_dupe_df.drop_duplicates(subset=['Dupe'], inplace=True)
 sq_error_res_dupe_df.loc[sq_error_res_dupe_df['Dupe'] != '', 'Dupe'] = "Error"
 sq_error_res_dupe_df = sq_error_res_dupe_df[['Punch', 'Puncher', 'Task', 'Subtask', 'Units', 'Orders Completed', 'Flex Run', 'Env Run', 'Dupe']]
@@ -1759,7 +1760,8 @@ data_df = pd.merge(data_df, day_per_agg, how='right', on='combined')
 
 data_df.rename(columns={'Day %_y':'Total_Day_%', 'Day %_x':'Day %'}, inplace=True)
 
-data_df['Total_Day_%'] = data_df['Total_Day_%'] + 0.0833
+#data_df['Total_Day_%'] = data_df['Total_Day_%'] + 0.0833
+data_df['Total_Day_%'] = data_df['Total_Day_%']
 
 data_df["Total_Earned_Hours"] = ((data_df['Regular Hours'].astype('float64'))/24) * data_df['Total_Day_%']
 data_df["Earned_Hours"] = ((data_df['adjusted_shift_length'])/24) * data_df['Day %']
