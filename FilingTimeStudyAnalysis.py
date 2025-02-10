@@ -62,7 +62,7 @@ run_gen_df = pd.merge(run_gen_df, ri_prod_df, left_on='RI', right_on='RI_NUMBER'
 ##Sum quantities per run / cabinet combo
 run_gen_df["count"] = run_gen_df['Run'].astype(str) + run_gen_df['CABINET'].astype(str)
 
-run_gen_df["count"] = run_gen_df['RI_NUMBER'].astype(str) + run_gen_df['CARD_NAME'].astype(str)
+run_gen_df["unsorted_count"] = run_gen_df['RI_NUMBER'].astype(str) + run_gen_df['CARD_NAME'].astype(str)
 
 
 
@@ -74,7 +74,8 @@ run_gen_df = run_gen_df.loc[run_gen_df['count'] == '240815-001MTG-LP-805']
 
 
 
-
+unsorted_unique_cards_per_cabinet = run_gen_df.groupby('count')['unsorted_count'].nunique()
+run_gen_df = pd.merge(run_gen_df, unsorted_unique_cards_per_cabinet, how='right', on='count')
 
 
 
