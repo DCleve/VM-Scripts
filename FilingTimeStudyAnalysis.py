@@ -64,16 +64,6 @@ run_gen_df["count"] = run_gen_df['Run'].astype(str) + run_gen_df['CABINET'].asty
 
 run_gen_df["unsorted_count"] = run_gen_df['RI_NUMBER'].astype(str) + run_gen_df['CARD_NAME'].astype(str)
 
-
-
-
-
-
-run_gen_df = run_gen_df.loc[run_gen_df['count'] == '250205-001MTG-NMF-188']
-
-
-
-
 unsorted_unique_cards_per_cabinet = run_gen_df.groupby('count')['unsorted_count'].nunique()
 run_gen_df = pd.merge(run_gen_df, unsorted_unique_cards_per_cabinet, how='right', on='count')
 
@@ -89,28 +79,6 @@ run_gen_df.rename(columns={'QUANTITY_STOCKED_x':'qty_stocked_per_pcid_per_ri', '
 run_gen_df["sorted_density"] = run_gen_df['qty_stocked_per_cabinet'].astype('float64') / run_gen_df['unique_cards_per_cabinet'].astype('float64')
 
 run_gen_df["unsorted_density"] = run_gen_df['qty_stocked_per_cabinet'].astype('float64') / run_gen_df['unsorted_unique_cards_per_cabinet'].astype('float64')
-
-
-
-test = gc.open_by_key('1fhDGyzR9OMXbFVw56h02KMnd7m-eGsaGBvKzit0Qujs')
-testTab = test.worksheet('Test')
-testTab.clear()
-gd.set_with_dataframe(testTab, run_gen_df)
-exit()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ##Parse down dataframe
 run_gen_df.drop_duplicates(subset=['count'], inplace=True)
