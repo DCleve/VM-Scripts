@@ -62,6 +62,31 @@ run_gen_df = pd.merge(run_gen_df, ri_prod_df, left_on='RI', right_on='RI_NUMBER'
 ##Sum quantities per run / cabinet combo
 run_gen_df["count"] = run_gen_df['Run'].astype(str) + run_gen_df['CABINET'].astype(str)
 
+
+
+
+
+test = gc.open_by_key('1fhDGyzR9OMXbFVw56h02KMnd7m-eGsaGBvKzit0Qujs')
+testTab = test.worksheet('Test')
+testTab.clear()
+gd.set_with_dataframe(testTab, run_gen_df.head(10))
+exit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 cards_filed_per_cabinet = run_gen_df.groupby('count')['QUANTITY_STOCKED'].sum()
 run_gen_df = pd.merge(run_gen_df, cards_filed_per_cabinet, how='right', on='count')
 
