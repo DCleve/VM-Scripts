@@ -83,7 +83,12 @@ run_gen_df = pd.merge(run_gen_df, unique_cards_per_cabinet, how='right', on='cou
 cards_filed_per_cabinet = run_gen_df.groupby('count')['QUANTITY_STOCKED'].sum()
 run_gen_df = pd.merge(run_gen_df, cards_filed_per_cabinet, how='right', on='count')
 
+run_gen_df.rename(columns={'QUANTITY_STOCKED_x':'qty_stocked_per_pcid_per_ri', 'QUANTITY_STOCKED_y':'qty_stocked_per_cabinet', 'CARD_NAME_y':'unique_cards_per_cabinet', 'unsorted_count_x':'unsorted_count', 'unsorted_count_y':'unsorted_unique_cards_per_cabinet'}, inplace=True)
 
+##Calculate density per cabinet
+run_gen_df["sorted_density"] = run_gen_df['qty_stocked_per_cabinet'].astype('float64') / run_gen_df['unique_cards_per_cabinet'].astype('float64')
+
+run_gen_df["unsorted_density"] = run_gen_df['qty_stocked_per_cabinet'].astype('float64') / run_gen_df['unsorted_unique_cards_per_cabinet'].astype('float64')
 
 
 
@@ -107,20 +112,10 @@ exit()
 
 
 
-
-
-
-
-
-run_gen_df.rename(columns={'QUANTITY_STOCKED_x':'qty_stocked_per_pcid_per_ri', 'QUANTITY_STOCKED_y':'qty_stocked_per_cabinet', 'CARD_NAME_y':'unique_cards_per_cabinet'}, inplace=True)
-
-##Calculate density per cabinet
-run_gen_df["Density"] = run_gen_df['qty_stocked_per_cabinet'].astype('float64') / run_gen_df['unique_cards_per_cabinet'].astype('float64')
-
 ##Parse down dataframe
 run_gen_df.drop_duplicates(subset=['count'], inplace=True)
 
-run_gen_df = run_gen_df[['Run', 'CABINET', 'qty_stocked_per_cabinet', 'Density']]
+run_gen_df = run_gen_df[['Run', 'CABINET', 'qty_stocked_per_cabinet', 'sorted_density', 'unsorted_density']]
 
 run_gen_df.rename(columns={'CABINET':'Cabinet', 'qty_stocked_per_cabinet':'Cards'}, inplace=True)
 
