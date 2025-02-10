@@ -69,7 +69,7 @@ run_gen_df["unsorted_count"] = run_gen_df['RI_NUMBER'].astype(str) + run_gen_df[
 
 
 
-run_gen_df = run_gen_df.loc[run_gen_df['count'] == '240815-001MTG-LP-805']
+run_gen_df = run_gen_df.loc[run_gen_df['count'] == '250205-001MTG-NMF-188']
 
 
 
@@ -77,9 +77,11 @@ run_gen_df = run_gen_df.loc[run_gen_df['count'] == '240815-001MTG-LP-805']
 unsorted_unique_cards_per_cabinet = run_gen_df.groupby('count')['unsorted_count'].nunique()
 run_gen_df = pd.merge(run_gen_df, unsorted_unique_cards_per_cabinet, how='right', on='count')
 
+unique_cards_per_cabinet = run_gen_df.groupby('count')['CARD_NAME'].nunique()
+run_gen_df = pd.merge(run_gen_df, unique_cards_per_cabinet, how='right', on='count')
 
-
-
+cards_filed_per_cabinet = run_gen_df.groupby('count')['QUANTITY_STOCKED'].sum()
+run_gen_df = pd.merge(run_gen_df, cards_filed_per_cabinet, how='right', on='count')
 
 
 
@@ -106,11 +108,9 @@ exit()
 
 
 
-cards_filed_per_cabinet = run_gen_df.groupby('count')['QUANTITY_STOCKED'].sum()
-run_gen_df = pd.merge(run_gen_df, cards_filed_per_cabinet, how='right', on='count')
 
-unique_cards_per_cabinet = run_gen_df.groupby('count')['CARD_NAME'].nunique()
-run_gen_df = pd.merge(run_gen_df, unique_cards_per_cabinet, how='right', on='count')
+
+
 
 run_gen_df.rename(columns={'QUANTITY_STOCKED_x':'qty_stocked_per_pcid_per_ri', 'QUANTITY_STOCKED_y':'qty_stocked_per_cabinet', 'CARD_NAME_y':'unique_cards_per_cabinet'}, inplace=True)
 
