@@ -63,13 +63,13 @@ run_gen_df = pd.merge(run_gen_df, ri_prod_df, left_on='RI', right_on='RI_NUMBER'
 run_gen_df["count"] = run_gen_df['Run'].astype(str) + run_gen_df['CABINET'].astype(str)
 
 
-
+run_gen_df = run_gen_df.loc[run_gen_df['count'] == '240815-001MTG-LP-805']
 
 
 test = gc.open_by_key('1fhDGyzR9OMXbFVw56h02KMnd7m-eGsaGBvKzit0Qujs')
 testTab = test.worksheet('Test')
 testTab.clear()
-gd.set_with_dataframe(testTab, run_gen_df.head(10))
+gd.set_with_dataframe(testTab, run_gen_df)
 exit()
 
 
