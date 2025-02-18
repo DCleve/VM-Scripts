@@ -30,7 +30,7 @@ recAvlTab = efficFactorsDoc.worksheet('RecAvl')
 recAvlTab.clear()
 
 shpAvlTab = efficFactorsDoc.worksheet('ShpAvl')
-shpAvlTab.clear()
+shpAvlTab.batch_clear(['A1:I'])
 
 time.sleep(15)
 
@@ -188,7 +188,7 @@ shp_avl_df = pd.merge(shp_avl_df, staffing_df, how='left', on='Puncher')
 shp_avl_df = shp_avl_df[['SQ_NUMBER', 'ORDER_COUNT', 'PRODUCT_COUNT', 'CREATED_AT', 'LAST_UPDATED_AT', 'SQ_STATUS', 'PULLING_START', 'PULLING_END', 'Shift Name']]
 
 ##Write to sheet
-gd.set_with_dataframe(shpAvlTab, shp_avl_df)
+gd.set_with_dataframe(shpAvlTab, shp_avl_df, row=1, col=1)
 
 ##Turn document back on
 cell_list = nuwayDataTab.range('A2')
