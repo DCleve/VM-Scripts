@@ -322,8 +322,3 @@ gd.set_with_dataframe(report_tab, pcid_df, row=1, col=1)
 time.sleep(15)
 
 gd.set_with_dataframe(report_tab, pcid_df_2, row=1, col=6)
-
-
-
-
-

@@ -340,8 +340,6 @@ cabTab.batch_clear(['A1:D'])
 gd.set_with_dataframe(cabTab, cab_df, row=1, col=1)
 gd.set_with_dataframe(cabTab, unique_cabs_df, row=1, col=4)
 
-exit()
-
 ##Update audit log
 csv_string = ["C:", "Users", login, "OneDrive - eBay Inc", "AC-Scripting", "Audit CSVs", "AuditLog.csv"]
 result = separator.join(csv_string)
